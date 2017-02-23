@@ -1,0 +1,81 @@
+
+import numpy as np
+x = np.array([[3,3],[4,3],[1,1]])
+y = np.array([1,1,-1])
+wb_trace = []
+
+gramMatrix = x.dot(x.T)
+print 'gramMatrix = ' , gramMatrix
+# print len(x[0])
+
+w0 = np.zeros(len(x))
+# print w0
+b = 0
+i = 0
+k = 0
+learnrate = 1  #learning rate
+
+while 1 :
+    if y[i] * (np.sum(w0 * y * gramMatrix[i])+ b)<=0:  
+        w0[i] = w0[i] + learnrate
+        b = b + y[i]*learnrate
+        i = 0
+        k = k+1
+        wb_trace.append([(w0 * y.T).dot(x), b])  #record w&b
+        print 'interaction counter = ' , k
+        print 'w0 = ' , w0
+        print 'b = ' , b 
+        continue
+    else:
+        i = i+1
+        print 'i = ' , i 
+    if i >=x.shape[0]:
+        print 'interaction finish'
+        break
+    
+w = (w0*y.T).dot(x)
+print 'w = ' , w 
+print 'b = ' , b 
+print 'wb_trace w,b = ' , wb_trace
+
+# creat a picture 
+import matplotlib.pyplot as plt
+from matplotlib import animation
+
+fig = plt.figure()
+ax = plt.axes()
+line, = ax.plot([], [], 'g', lw=2)
+label = ax.text([], [], '')
+
+def init():
+    global x,y,line,label
+    plt.axis([-6, 6, -6, 6])
+    plt.scatter(x[0:2,0],x[0:2,1],c ="r",label = "postive",s = 60) 
+    plt.scatter(x[2,0],x[2,1],c = "y",label = "negtive",s =60)     
+    plt.grid(True)
+    plt.xlabel('X1')
+    plt.ylabel('X2')
+    plt.title('myPerceptron')
+    return line, label      
+
+def animate(i):             
+    global wb_trace, ax, line, label
+
+    w = wb_trace[i][0]
+    b = wb_trace[i][1]
+    if w[1] == 0: return line, label
+    x1 = -6.0                       
+    y1 = -(b + w[0] * x1) / w[1]
+    x2 = 6.0
+    y2 = -(b + w[0] * x2) / w[1]
+    line.set_data([x1, x2], [y1, y2])
+    x1 = 0.0
+    y1 = -(b + w[0] * x1) / w[1]     
+    label.set_text(str( wb_trace[i][0]) + '  ' + str(b)) 
+    label.set_position([x1, y1])
+    return line, label
+
+anim = animation.FuncAnimation(fig, animate,init_func=init, frames=len(wb_trace), interval=1000, repeat=True,blit=True)
+plt.legend(fancybox = True)
+plt.show()
+#anim.save('perceptron.gif', fps=2, writer='imagemagick')
